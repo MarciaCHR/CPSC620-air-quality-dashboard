@@ -167,7 +167,23 @@ def calculate_air_quality_metrics(df):
             'min': ah_data.min(),
             'std': ah_data.std()
         }
-    
+
+    # Calculate metrics for additional pollutants.
+    additional_pollutants = {
+        'no2': 'NO2(GT)',
+        'benzene': 'C6H6(GT)'
+    }
+
+    for metric_key, column in additional_pollutants.items():
+        if column in df.columns:
+            valid_data = df[column].dropna()
+
+            metrics[metric_key] = {
+                'mean': valid_data.mean(),
+                'max': valid_data.max(),
+                'min': valid_data.min()
+            }
+
     return metrics
 
 

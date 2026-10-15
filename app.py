@@ -84,16 +84,20 @@ def main():
     display_metrics = create_summary_metrics_display(metrics)
     
     if display_metrics:
-        # Display metrics in cards
-        cols = st.columns(len(display_metrics))
-        
-        for i, (metric_name, metric_values) in enumerate(display_metrics.items()):
-            with cols[i]:
-                st.markdown(f'<div class="metric-card">', unsafe_allow_html=True)
-                st.subheader(metric_name)
-                for key, value in metric_values.items():
-                    st.metric(key, value)
-                st.markdown('</div>', unsafe_allow_html=True)
+        # Display up to three KPI cards per row.
+        metric_items = list(display_metrics.items())
+        cards_per_row = 3
+
+        for start in range(0, len(metric_items), cards_per_row):
+            cols = st.columns(cards_per_row)
+            row_items = metric_items[start:start + cards_per_row]
+
+            for col, (metric_name, metric_values) in zip(cols, row_items):
+                with col:
+                    st.subheader(metric_name)
+
+                    for label, value in metric_values.items():
+                        st.metric(label=label, value=value)
     
     # Data preview table
     st.markdown('<h2 class="section-header">Data Preview</h2>', unsafe_allow_html=True)
