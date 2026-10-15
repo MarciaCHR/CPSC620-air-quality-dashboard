@@ -125,10 +125,25 @@ def main():
     col3, col4 = st.columns(2)
     
     with col3:
-        st.subheader("CO Distribution")
-        co_dist_plot = plot_pollutant_distribution(df, 'CO(GT)')
-        if co_dist_plot:
-            st.pyplot(co_dist_plot)
+        st.subheader("Interactive Pollutant Distribution")
+
+        # Dropdown menu to select a pollutant
+        selected_pollutant = st.selectbox(
+            "Select a pollutant:",
+            ["CO(GT)", "NOx(GT)", "NO2(GT)"]
+        )
+
+        # Generate the distribution chart
+        pollutant_plot = plot_pollutant_distribution(
+            df,
+            selected_pollutant
+        )
+
+        # Display the selected pollutant
+        if pollutant_plot is not None:
+            st.pyplot(pollutant_plot)
+        else:
+            st.warning("No valid data available for this pollutant.")
     
     with col4:
         st.subheader("NOx(GT) vs Sensor Value")
