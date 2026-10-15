@@ -9,47 +9,58 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 
 def plot_co_over_time(df, title="CO(GT) Concentration Over Time"):
-    """
-    Create a line plot showing CO concentration over time.
-    
-    Args:
-        df (pd.DataFrame): Cleaned dataset with DateTime column
-        title (str): Chart title
-        
-    Returns:
-        matplotlib.figure.Figure: The plot figure
-    """
-    if df is None or 'CO(GT)' not in df.columns:
+    """Create an interactive CO concentration chart using Plotly."""
+    if df is None:
         return None
-    
-    # Filter out missing values
-    plot_data = df[['DateTime', 'CO(GT)']].dropna()
-    
-    # Additional filter to remove NaT values from DateTime
-    plot_data = plot_data[plot_data['DateTime'].notna()]
-    
+
+    required_columns = ['DateTime', 'CO(GT)']
+    if not all(col in df.columns for col in required_columns):
+        return None
+
+    # Exclude missing values and arrange measurements chronologically.
+    plot_data = (
+        df[required_columns]
+        .dropna()
+        .sort_values('DateTime')
+    )
+
     if plot_data.empty:
         return None
-    
-    fig, ax = plt.subplots(figsize=(12, 6))
-    
-    ax.plot(plot_data['DateTime'], plot_data['CO(GT)'], 
-            linewidth=1, alpha=0.7, color='#2E8B57')
-    
-    ax.set_title(title, fontsize=16, fontweight='bold')
-    ax.set_xlabel('Date', fontsize=12)
-    ax.set_ylabel('CO(GT) Concentration (mg/m³)', fontsize=12)
-    ax.grid(True, alpha=0.3)
-    
-    # Rotate x-axis labels for better readability
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    
-    return fig
 
+    # Create the interactive line chart.
+    fig = px.line(
+        plot_data,
+        x='DateTime',
+        y='CO(GT)',
+        title=title,
+        labels={
+            'DateTime': 'Date and Time',
+            'CO(GT)': 'CO Concentration (mg/m³)'
+        }
+    )
+
+    fig.update_traces(
+        line_color='#2E8B57',
+        hovertemplate=(
+            'Date: %{x|%d %b %Y}<br>'
+            'Time: %{x|%H:%M}<br>'
+            'CO: %{y:.2f} mg/m³'
+            '<extra></extra>'
+        )
+    )
+
+    fig.update_layout(
+        template='plotly_white',
+        hovermode='closest',
+        dragmode='zoom',
+        height=450
+    )
+
+    return fig
 
 def plot_temperature_vs_humidity(df, title="Temperature vs Absolute Humidity"):
     """
