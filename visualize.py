@@ -356,5 +356,31 @@ def create_summary_metrics_display(metrics):
             'Maximum': f"{rh_metrics['max']:.1f}%",
             'Minimum': f"{rh_metrics['min']:.1f}%"
         }
-    
+
+    # Format additional pollutant metrics.
+    additional_pollutants = {
+        'no2': 'Nitrogen Dioxide (NO₂)',
+        'benzene': 'Benzene (C₆H₆)'
+    }
+
+    statistic_labels = {
+        'mean': 'Average',
+        'max': 'Maximum',
+        'min': 'Minimum'
+    }
+
+    for metric_key, display_name in additional_pollutants.items():
+        if metric_key in metrics:
+            formatted_values = {}
+
+            for statistic, label in statistic_labels.items():
+                value = metrics[metric_key][statistic]
+                formatted_values[label] = (
+                    f"{value:.2f} µg/m³"
+                    if pd.notna(value)
+                    else "N/A"
+                )
+
+            display_metrics[display_name] = formatted_values
+
     return display_metrics
