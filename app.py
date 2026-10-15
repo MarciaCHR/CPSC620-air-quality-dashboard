@@ -108,8 +108,16 @@ def main():
     with col1:
         st.subheader("CO Concentration Over Time")
         co_plot = plot_co_over_time(df)
-        if co_plot:
-            st.pyplot(co_plot)
+        if co_plot is not None:
+            st.plotly_chart(
+                co_plot,
+                use_container_width=True,
+                config={
+                    "displayModeBar": True,
+                    "scrollZoom": True,
+                    "displaylogo": False
+                }
+            )
         else:
             st.warning("No CO data available for plotting")
     
