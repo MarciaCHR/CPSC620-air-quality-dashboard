@@ -24,9 +24,21 @@ st.markdown("""
 <style>
     .main-header {
         font-size: 2.5rem;
-        color: #2E8B57;
+        color: #B9E8D8 !important;
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 0.75rem;
+    }
+    .intro-copy {
+        color: #C6D5D0;
+        text-align: center;
+        font-size: 1.05rem;
+        line-height: 1.6;
+        max-width: 900px;
+        margin: 0 auto 2rem auto;
+    }
+    .intro-copy strong {
+        color: #E8F5F0;
+        font-size: 1.15rem;
     }
     .metric-card {
         background-color: #f0f2f6;
@@ -36,11 +48,33 @@ st.markdown("""
     }
     .section-header {
         font-size: 1.5rem;
-        color: #2E8B57;
+        color: #5BE2B2 !important;
+        text-align: center;
         margin-top: 2rem;
         margin-bottom: 1rem;
         border-bottom: 2px solid #2E8B57;
         padding-bottom: 0.5rem;
+    }
+    .metric-label {
+        color: #D4DAD8;
+        font-size: 0.9rem;
+        text-align: center;
+        margin-top: 0.45rem;
+    }
+    .metric-value {
+        color: #F4F6F5;
+        font-size: 1.3rem;
+        text-align: center;
+        margin-bottom: 0.75rem;
+    }
+    div[data-testid="stTable"] th,
+    div[data-testid="stTable"] td {
+        text-align: center !important;
+    }
+    .stApp h3 {
+        color: #A7DCCB;
+        font-size: 1.35rem;
+        text-align: center;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -49,15 +83,16 @@ def main():
     """Main application function."""
     
     # Header
-    st.markdown('<h1 class="main-header">Air Quality Dashboard</h1>', 
+    st.markdown('<h1 class="main-header">Air Quality Dashboard</h1>',
                 unsafe_allow_html=True)
-    
+
     st.markdown("""
-    **Welcome to the Air Quality Analysis Dashboard!** 
-    
-    This dashboard analyzes air quality data from an Italian city monitoring station. 
-    The dataset includes various air pollutants and weather variables collected over time.
-    """)
+    <div class="intro-copy">
+        <strong>Welcome to the Air Quality Analysis Dashboard</strong><br>
+        Explore air pollution and weather measurements collected over time
+        at a monitoring station in Italy.
+    </div>
+    """, unsafe_allow_html=True)
     
     # Load and cache data
     @st.cache_data
@@ -97,16 +132,66 @@ def main():
                     st.subheader(metric_name)
 
                     for label, value in metric_values.items():
-                        st.metric(label=label, value=value)
+                        st.markdown(
+                            f'<div class="metric-label">{label}</div>'
+                            f'<div class="metric-value">{value}</div>',
+                            unsafe_allow_html=True
+                        )
     
     # Data preview table
+    # Data quality summary
+    data_summary = get_data_summary(df)
+    sensor_columns = data_summary["numeric_columns"]
+    missing_counts = df[sensor_columns].isna().sum()
+
+    st.markdown(
+        '<h2 class="section-header">Data Quality Summary</h2>',
+        unsafe_allow_html=True
+    )
+
+    quality_cols = st.columns(3)
+    quality_metrics = [
+        ("Records", f"{data_summary['total_records']:,}"),
+        (
+            "Date range",
+            f"{data_summary['date_range']['start']:%Y-%m-%d} to "
+            f"{data_summary['date_range']['end']:%Y-%m-%d}"
+        ),
+        ("Missing sensor values", f"{missing_counts.sum():,}"),
+    ]
+    for column, (label, value) in zip(quality_cols, quality_metrics):
+        with column:
+            st.markdown(
+                f'<div class="metric-label">{label}</div>'
+                f'<div class="metric-value">{value}</div>',
+                unsafe_allow_html=True
+            )
+
+    missing_summary = pd.DataFrame({
+        "Sensor": sensor_columns,
+        "Missing values": [
+            int(missing_counts[column]) for column in sensor_columns
+        ],
+        "Missing (%)": [
+            f"{data_summary['missing_data_percentage'][column]:.2f}%"
+            for column in sensor_columns
+        ],
+    })
+    centered_missing_summary = (
+        missing_summary.style
+        .set_properties(**{"text-align": "center"})
+        .set_table_styles([
+            {"selector": "th", "props": [("text-align", "center")]}
+        ])
+    )
+    st.table(centered_missing_summary)
     st.markdown('<h2 class="section-header">Data Preview</h2>', unsafe_allow_html=True)
     st.dataframe(df.head(10), use_container_width=True)
     
     # Visualizations
     st.markdown('<h2 class="section-header">Data Visualizations</h2>', unsafe_allow_html=True)
     
-    # Base charts as required
+    # Base charts as required. Keep both charts the same display height.
     col1, col2 = st.columns(2)
     
     with col1:
@@ -129,21 +214,21 @@ def main():
         st.subheader("Temperature vs Absolute Humidity")
         temp_humidity_plot = plot_temperature_vs_humidity(df)
         if temp_humidity_plot:
-            st.pyplot(temp_humidity_plot)
+            st.pyplot(temp_humidity_plot, use_container_width=True)
         else:
             st.warning("No temperature/humidity data available for plotting")
     
+    # Place the shared selector above the chart row so both plots begin together.
+    selected_pollutant = st.selectbox(
+        "Select a pollutant:",
+        ["CO(GT)", "NOx(GT)", "NO2(GT)"]
+    )
+
     # Additional visualizations
     col3, col4 = st.columns(2)
     
     with col3:
         st.subheader("Interactive Pollutant Distribution")
-
-        # Dropdown menu to select a pollutant
-        selected_pollutant = st.selectbox(
-            "Select a pollutant:",
-            ["CO(GT)", "NOx(GT)", "NO2(GT)"]
-        )
 
         # Generate the distribution chart
         pollutant_plot = plot_pollutant_distribution(
@@ -153,7 +238,7 @@ def main():
 
         # Display the selected pollutant
         if pollutant_plot is not None:
-            st.pyplot(pollutant_plot)
+            st.pyplot(pollutant_plot, use_container_width=True)
         else:
             st.warning("No valid data available for this pollutant.")
     
@@ -161,7 +246,7 @@ def main():
         st.subheader("NOx(GT) vs Sensor Value")
         nox_plot = plot_nox_vs_sensor(df)
         if nox_plot:
-            st.pyplot(nox_plot)
+            st.pyplot(nox_plot, use_container_width=True)
         else:
             st.warning("No NOx data available for plotting")
     
@@ -169,7 +254,7 @@ def main():
     st.subheader("Correlation Heatmap")
     corr_plot = plot_correlation_heatmap(df)
     if corr_plot:
-        st.pyplot(corr_plot)
+        st.pyplot(corr_plot, use_container_width=True)
 
 if __name__ == "__main__":
     main()
