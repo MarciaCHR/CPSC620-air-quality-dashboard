@@ -57,7 +57,7 @@ def plot_co_over_time(df, title="CO(GT) Concentration Over Time"):
         template='plotly_white',
         hovermode='closest',
         dragmode='zoom',
-        height=450
+        height=320
     )
 
     return fig
