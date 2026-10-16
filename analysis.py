@@ -230,3 +230,28 @@ def get_daily_averages(df):
     daily_avg = df.groupby('Date')[numeric_cols].mean().reset_index()
     
     return daily_avg
+
+def calculate_selected_pollutant_metrics(df, pollutant):
+    """
+    Calculate summary statistics for the selected pollutant.
+
+    Args:
+        df (pd.DataFrame): Cleaned air quality dataset
+        pollutant (str): Selected pollutant column
+
+    Returns:
+        dict: Mean, maximum, and minimum concentrations
+    """
+    if df is None or pollutant not in df.columns:
+        return None
+
+    valid_data = df[pollutant].dropna()
+
+    if valid_data.empty:
+        return None
+
+    return {
+        'mean': valid_data.mean(),
+        'max': valid_data.max(),
+        'min': valid_data.min()
+    }

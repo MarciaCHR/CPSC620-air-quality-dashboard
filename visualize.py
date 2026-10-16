@@ -384,3 +384,101 @@ def create_summary_metrics_display(metrics):
             display_metrics[display_name] = formatted_values
 
     return display_metrics
+
+def plot_pollutant_over_time(df, pollutant, unit):
+    """
+    Create an interactive Plotly time-series chart
+    for the selected pollutant.
+    """
+    if df is None or pollutant not in df.columns:
+        return None
+
+    if 'DateTime' not in df.columns:
+        return None
+
+    # Remove missing values and sort chronologically
+    plot_data = (
+        df[['DateTime', pollutant]]
+        .dropna()
+        .sort_values('DateTime')
+    )
+
+    if plot_data.empty:
+        return None
+
+    # Create interactive line chart
+    fig = px.line(
+        plot_data,
+        x='DateTime',
+        y=pollutant,
+        title=f"{pollutant} Concentration Over Time",
+        labels={
+            'DateTime': 'Date and Time',
+            pollutant: f'Concentration ({unit})'
+        }
+    )
+
+    # Preserve interactive features
+    fig.update_traces(
+        line_color='#2E8B57',
+        hovertemplate=(
+            'Date: %{x|%d %b %Y}<br>'
+            'Time: %{x|%H:%M}<br>'
+            f'Concentration: %{{y:.2f}} {unit}'
+            '<extra></extra>'
+        )
+    )
+
+    fig.update_layout(
+        template='plotly_white',
+        hovermode='closest',
+        dragmode='zoom',
+        height=450
+    )
+
+    return fig
+
+def plot_pollutant_vs_sensor(df, pollutant, sensor, unit):
+    """
+    Create a scatter plot comparing the selected pollutant
+    with its associated sensor reading.
+    """
+    if df is None:
+        return None
+
+    if pollutant not in df.columns or sensor not in df.columns:
+        return None
+
+    # Remove rows with missing measurements
+    plot_data = df[[pollutant, sensor]].dropna()
+
+    if plot_data.empty:
+        return None
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    scatter = ax.scatter(
+        plot_data[pollutant],
+        plot_data[sensor],
+        alpha=0.6,
+        c=plot_data[pollutant],
+        cmap='Reds',
+        s=20
+    )
+
+    ax.set_title(
+        f"{pollutant} vs {sensor}",
+        fontsize=16,
+        fontweight='bold'
+    )
+
+    ax.set_xlabel(f"{pollutant} Concentration ({unit})")
+    ax.set_ylabel(f"{sensor} Sensor Reading")
+    ax.grid(True, alpha=0.3)
+
+    cbar = plt.colorbar(scatter, ax=ax)
+    cbar.set_label(f"{pollutant} Concentration ({unit})")
+
+    plt.tight_layout()
+
+    return fig
