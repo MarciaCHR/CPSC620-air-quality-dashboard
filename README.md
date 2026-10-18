@@ -40,15 +40,16 @@ This project uses the **UCI Air Quality Dataset** from an Italian city monitorin
 ## Quick Start
 
 ### Prerequisites
-- Python 3.7 or higher
+- Python 3.11–3.15 (check the [current Streamlit installation guide](https://docs.streamlit.io/get-started/installation/command-line) for supported versions)
 - pip package manager
+- PyCharm or Visual Studio Code (optional, if you prefer an IDE)
 
 ### Installation
 
 1. **Clone or download this repository**
    ```bash
-   git clone <repository-url>
-   cd air_quality
+   git clone https://github.com/MarciaCHR/CPSC620-air-quality-dashboard.git
+   cd CPSC620-air-quality-dashboard
    ```
 
 2. **Download the dataset**
@@ -66,17 +67,51 @@ This project uses the **UCI Air Quality Dataset** from an Italian city monitorin
    └── AirQualityUCI.csv  # Downloaded separately
    ```
 
-3. **Install required packages**
-   ```bash
-   pip install streamlit pandas matplotlib seaborn numpy
+3. **Create and activate a virtual environment**
+
+   Create a separate environment for this project. Do not copy a `.venv` folder between Windows and macOS.
+
+   **Windows (PowerShell):**
+   ```powershell
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
    ```
 
-4. **Run the dashboard**
-   ```bash
-   streamlit run app.py
+   If PowerShell does not allow the activation script to run, use **Command Prompt** instead:
+   ```bat
+   py -m venv .venv
+   .venv\Scripts\activate.bat
    ```
 
-5. **Open your browser** and navigate to `http://localhost:8501`
+   **macOS:**
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+
+4. **Install all required packages**
+
+   With the virtual environment activated, run:
+   ```bash
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   ```
+
+   The `requirements.txt` file includes the dashboard dependencies, including Plotly.
+
+5. **Select the virtual environment in your IDE (optional)**
+
+   - **PyCharm:** In the project’s Python Interpreter settings, select the interpreter inside `.venv`.
+     - Windows: `.venv\Scripts\python.exe`
+     - macOS: `.venv/bin/python`
+   - **Visual Studio Code:** Open the Command Palette, choose **Python: Select Interpreter**, and select the interpreter inside this project’s `.venv`.
+
+6. **Run the dashboard**
+   ```bash
+   python -m streamlit run app.py
+   ```
+
+7. **Open your browser** and navigate to `http://localhost:8501`
 
 ## About Streamlit
 
